@@ -5,7 +5,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    // Ye line aapke workspace ke andar branch ke naam ka folder banayegi
                     dir("${env.BRANCH_NAME}") {
                         checkout scm
                         echo "Code checked out in folder: ${env.BRANCH_NAME}"
@@ -17,7 +16,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Humne dir isliye lagaya hai taaki deploy commands ussi folder ke andar chalein
                     dir("${env.BRANCH_NAME}") {
                         if (env.BRANCH_NAME == 'Apache_Win') {
                             echo "Deploying code to apache web server on windows 11. Can visit http://localhost:81"
