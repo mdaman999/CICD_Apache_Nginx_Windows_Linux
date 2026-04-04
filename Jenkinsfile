@@ -1,19 +1,12 @@
 pipeline {
     agent any
 
-    // 1. Ye block Webhook trigger ko fix karega
-    triggers {
+	triggers {
+		issueUpdatedTerminator() // Optional: cleanup
         githubPush()
     }
-
+	
     stages {
-        stage('Cleanup') {
-            steps {
-                // Purani files delete karega taaki fresh code deploy ho
-                cleanWs()
-            }
-        }
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -26,10 +19,10 @@ pipeline {
                     if (env.BRANCH_NAME == 'Apache_Windows') {
                         echo "Deploying to Apache on Windows..."
                         bat 'xcopy /s /y * "C:\\Apache24\\htdocs\\"'
+						echo "Visit: http://localhost:81"
 
                     } else if (env.BRANCH_NAME == 'Apache_Linux') {
                         echo "Deploying to Apache on WSL (Ubuntu)..."
-                        // WSL commands
                         bat 'wsl -u root rm -rf /var/www/html/*'
                         bat 'wsl -u root cp -r . /var/www/html/'
                         echo "Visit: http://localhost:82"
@@ -37,6 +30,7 @@ pipeline {
                     } else if (env.BRANCH_NAME == 'Nginx_Windows') {
                         echo "Deploying to Nginx on Windows..."
                         bat 'xcopy /s /y * "C:\\nginx-1.28.3\\html\\"'
+						echo "Visit: http://localhost:83"
 
                     } else if (env.BRANCH_NAME == 'Nginx_Linux') {
                         echo "Deploying to Nginx on WSL (Ubuntu)..."
@@ -45,20 +39,10 @@ pipeline {
                         echo "Visit: http://localhost:84"
 
                     } else {
-                        echo "Branch '${env.BRANCH_NAME}' ke liye koi rule nahi hai."
+                        echo "No rule for ${env.BRANCH_NAME}"
                     }
                 }
             }
-        }
-    }
-
-    // 3. Status updates (optional but helpful)
-    post {
-        success {
-            echo "Successfully deployed branch: ${env.BRANCH_NAME}"
-        }
-        failure {
-            echo "Build failed! Logs check karein."
         }
     }
 }
