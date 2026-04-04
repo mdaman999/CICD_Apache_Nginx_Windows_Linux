@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+	triggers {
+		issueUpdatedTerminator() // Optional: cleanup
+        githubPush()
+    }
+	
     stages {
         stage('Checkout') {
             steps {
@@ -11,10 +16,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Yahan hum 'wsl -u root' use karenge jo seedhe root access dega bina password ke
                     if (env.BRANCH_NAME == 'Apache_Windows') {
                         echo "Deploying to Apache on Windows..."
                         bat 'xcopy /s /y * "C:\\Apache24\\htdocs\\"'
+						echo "Visit: http://localhost:81"
 
                     } else if (env.BRANCH_NAME == 'Apache_Linux') {
                         echo "Deploying to Apache on WSL (Ubuntu)..."
@@ -25,6 +30,7 @@ pipeline {
                     } else if (env.BRANCH_NAME == 'Nginx_Windows') {
                         echo "Deploying to Nginx on Windows..."
                         bat 'xcopy /s /y * "C:\\nginx-1.28.3\\html\\"'
+						echo "Visit: http://localhost:83"
 
                     } else if (env.BRANCH_NAME == 'Nginx_Linux') {
                         echo "Deploying to Nginx on WSL (Ubuntu)..."
