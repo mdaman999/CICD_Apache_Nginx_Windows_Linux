@@ -2,7 +2,6 @@ pipeline {
     agent any
 
 	triggers {
-		issueUpdatedTerminator() // Optional: cleanup
         githubPush()
     }
 	
