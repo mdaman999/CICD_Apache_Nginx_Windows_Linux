@@ -75,6 +75,6 @@ def deployK8s(deploymentName, containerName) {
         bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
     }
     
-    bat "kubectl set image deployment/${deploymentName} ${containerName}=${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+    bat "kubectl set image deployment/${deploymentName} CONTAINER_NAME(nginx/httpd)=${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
     bat "kubectl rollout status deployment/${deploymentName}"
 }
