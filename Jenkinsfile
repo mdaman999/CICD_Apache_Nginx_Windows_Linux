@@ -73,6 +73,6 @@ def deployK8s(deploymentName) {
 		bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
 	}
     echo "Updating K8s deployment: ${deploymentName} with image tag: ${IMAGE_TAG}"
-    bat "kubectl set image deployment/${deploymentName} ${deploymentName}=${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+    bat "kubectl set image deployment/${deploymentName} nginx=${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
     bat "kubectl rollout status deployment/${deploymentName}"
 }
