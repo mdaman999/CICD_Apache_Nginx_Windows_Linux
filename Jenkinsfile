@@ -65,16 +65,15 @@ pipeline {
 }
 
 def deployK8s(deploymentName, containerName) {
-    echo "Building docker image: ${IMAGE_TAG} and push on docker hub..."
-    
-    withCredentials([usernamePassword(credentialsId: "${DOCKER_CRED_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+    echo "Building and pushing specific version: ${IMAGE_TAG}"
+    withCredentials([usernamePassword(credentialsId: "${DOCKER_CRED_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) 
+	{
+        bat "echo %PASS% | docker login -u %USER% --password-stdin"
         bat "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
-        bat "docker login -u %USER% -p %PASS%"
         bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
-        bat "docker tag ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
-        bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
     }
     
+    echo "Updating K8s deployment: ${deploymentName} with image tag: ${IMAGE_TAG}"
     bat "kubectl set image deployment/${deploymentName} ${containerName}=${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
     bat "kubectl rollout status deployment/${deploymentName}"
 }
