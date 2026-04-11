@@ -36,7 +36,7 @@ pipeline {
 							break
 							
 						case 'Apache_K8s':
-							deployK8s('my-apache-deployment', 'my-apache-container')
+							deployK8s('my-apache-deployment')
 							break
 							
 						case 'Nginx_Windows':
@@ -52,7 +52,7 @@ pipeline {
 							break
 							
 						case 'Nginx_K8s':
-							deployK8s('my-nginx-deployment', 'my-nginx-container')
+							deployK8s('my-nginx-deployment')
 							break
 							
 						default:
@@ -64,17 +64,15 @@ pipeline {
     }
 }
 
-def deployK8s(deploymentName, containerName) {
-    echo "Building docker image: ${IMAGE_TAG} and push on docker hub..."
-    
-    withCredentials([usernamePassword(credentialsId: "${DOCKER_CRED_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-        bat "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
-        bat "docker login -u %USER% -p %PASS%"
-        bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
-        bat "docker tag ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
-        bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
-    }
-    
-    bat "kubectl set image deployment/${deploymentName} CONTAINER_NAME(nginx/httpd)=${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+def deployK8s(deploymentName) {
+    echo "Building and pushing specific version: ${IMAGE_TAG}"
+	withCredentials([usernamePassword(credentialsId: "${DOCKER_CRED_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) 
+	{
+		bat "docker login -u %USER% -p %PASS%"
+		bat "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
+		bat "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+	}
+    echo "Updating K8s deployment: ${deploymentName} with image tag: ${IMAGE_TAG}"
+    bat "kubectl set image deployment/${deploymentName} nginx=${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
     bat "kubectl rollout status deployment/${deploymentName}"
 }
